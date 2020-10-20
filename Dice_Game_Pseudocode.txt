@@ -1,0 +1,181 @@
+# Aaron Cooper
+# 8058
+# 50557
+# Programming Project June 2019
+# Task 2 - Dice Game - Pseudocode
+
+Authorised_Players = list[]
+Players = list["",""]
+Scores = list[0,0]
+Banned_Chars = list[",",":","\t","\n",";","\"","\'"," "]
+Collumn_Width = 50
+Table_Chars = list["¦","-"]
+FOR i IN Table_Chars THEN
+	IF i NOT IN Banned_Chars THEN
+		Banned_Chars.APPEND(i)
+	ENDIF
+NEXT i
+
+PROCEDURE Find_Authorised_Players()
+	
+	file_ = openRead("./.FILES/PLAYERS.txt")
+	
+	lines = list[]
+	
+	WHILE NOT file_.endOfFile() THEN
+		line.APPEND(file_.readLine())
+	ENDWHILE
+	
+	file_.close()
+	
+	FOR i IN lines THEN
+		name = line.strip("\n")
+		globals()["Authorised_Players"].APPEND(name)
+	NEXT i
+	
+	RETURN
+
+PROCEDURE Input_Details()
+	
+	Find_Authorised_Players()
+	
+	global Authorised_Players
+	global Players
+	global Banned_Chars
+	
+	FOR i FROM 0 TO 2 THEN
+	
+		WHILE Players[i] == "" THEN
+			INPUT name "Player "+STRING(i+1)+": What is your name? "
+			name = STRING(name).UPPER
+			
+			IF NAME == "" THEN
+				continue
+			ENDIF
+			
+			IF name IN Players THEN
+				OUTPUT "Player names cannot match."
+			ENDIF
+
+			a = FALSE
+			FOR x IN Banned_Chars THEN
+				
+				IF x IN name THEN
+					OUTPUT "Your name contains a banned character."
+					a = TRUE
+				ENDIF
+			NEXT x
+			
+			IF a THEN
+				continue
+			ENDIF
+			
+			IF name IN Authorised_Players THEN
+				globals()["Players"][i] = name
+			ELSE
+				OUTPUT "That is an invalid name."
+			ENDIF
+			
+		ENDWHILE
+		
+		OUTPUT ""
+		
+	NEXT i
+	
+	RETURN
+
+FUNCTION Get_Leaderboard()
+	
+	csv_file = openRead("./.FILES/LEADERBOARD.csv")
+	
+	output = {"HEADERS":"","Scores":list[]}
+	
+	FOR row IN csv_file THEN
+		IF row == list[] THEN
+			continue
+		ENDIF
+		IF output["HEADERS"] == "" THEN
+			output["HEADERS"] = row
+			continue
+		ENDIF
+		output["Scores"].APPEND(row)
+		
+	NEXT row
+	
+	csv_file.close()
+	
+	RETURN output
+
+FUNCTION Print_Leaderboard(leaderboard)
+	
+	global Collumn_Width
+	global Table_Chars
+	
+	OUTPUT "Leaderboard"
+	headers = list[]
+	
+	FOR i IN leaderboard["HEADERS"] THEN
+		headers.APPEND(i.CENTER(Collumn_Width," "))
+	NEXT i
+	
+	OUTPUT Table_Chars[0].join(headers)
+	OUTPUT Table_Chars[1]*len(leaderboard["HEADERS"])*Collumn_Width
+	
+	FOR i IN leaderboard["Scores"] THEN
+		line = list[]
+		FOR x IN i THEN
+			line.APPEND(x.CENTER(Collumn_Width," "))
+		NEXT x
+		OUPUT Table_Chars[0].join(line)
+	NEXT i
+	
+	RETURN
+
+PROCEDURE Write_Leaderboard(leaderboard)
+	
+	file_ = openWrite("./.FILES/LEADERBOARD.csv")
+	
+	file_.writeLine(leaderboard["HEADERS"])
+	
+	FOR i in leaderboard["SCORES"] THEN
+		file_.writeLine(i)
+	NEXT i
+	
+	file_.close()
+	
+	RETURN
+
+FUNCTION Roll_Dice(sides=6,number=1)
+	
+	die = list[]
+	
+	FOR i IN RANGE(number) THEN
+		roll = random(1,sides)
+		die.APPEND(roll)
+	NEXT i
+	
+	RETURN die
+
+FUNCTION Get_Score(current_score)
+	
+	die = Roll_Dice(number=2)
+	
+	INPUT "You have rolled a "+STRING(MIN(die[0],die[1]))+" and a "+STRING(MAX(die[0],die[1]))+"."
+	
+	die_total = die[0] + die[1]
+	new_score = current_score + die_total
+	
+	IF die_total MOD 2 == 0 THEN
+		new_score = new_score + 10
+	ELSE IF new_score >= 5 THEN
+		new_score = new_score - 5
+	ENDIF
+	
+	IF die[0] == die[1] THEN
+		INPUT "You have rolled a double. Press enter to roll again."
+		extra_die = Roll_Dice()
+		OUTPUT "You have rolled a "+STRING(extra_die[0])+"."
+		new_score = new_score + extra_die[0]
+	ENDIF
+	
+	RETURN new_score
